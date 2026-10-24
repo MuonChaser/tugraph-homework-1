@@ -38,7 +38,7 @@
 整体流程为：UTF-8 CSV → JSON 图模型和字段映射 → lgraph\_import 原生导入 → TuGraph 存储引擎 → Browser 查询交互。节点用 name 作为主键，关系文件按主键连接节点。原始 CSV 与数据库目录分别保存，便于复现和备份。
 
 
-运行环境为 Windows Docker Desktop 的 Linux 容器，数据库来自官方发布的 4.5.1 RPM 包。最终容器使用 Debian 13 基础环境，宿主机 HTTP 17070、Bolt 17687、RPC 19090 映射至容器对应端口，映射地址限定为 127.0.0.1。
+由于本地设备性能充足，本实验采用 Docker 在本地部署 TuGraph。运行环境为 Windows Docker Desktop 的 Linux 容器，数据库来自官方发布的 4.5.1 RPM 包。最终容器使用 Debian 13 基础环境，宿主机 HTTP 17070、Bolt 17687、RPC 19090 映射至容器对应端口，映射地址限定为 127.0.0.1。
 
 
 \begin{figure}[H]\centering

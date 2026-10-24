@@ -27,7 +27,7 @@
 
 ## 2. 安装与启动
 
-环境：Windows、Docker Desktop、Linux x86_64 容器。TuGraph 版本 4.5.1，运行图项目名为 medical_demo。
+由于本地设备性能充足，本实验采用 Docker 在本地部署 TuGraph。环境为 Windows、Docker Desktop、Linux x86_64 容器。TuGraph 版本 4.5.1，运行图项目名为 medical_demo。
 
 ```powershell
 git clone https://github.com/MuonChaser/tugraph-homework-1.git
