@@ -1,0 +1,11 @@
+vendor/
+runtime/
+tmp/
+__pycache__/
+*.pyc
+.env
+build/
+/*.aux
+/*.out
+/*.log
+/*.synctex.gz

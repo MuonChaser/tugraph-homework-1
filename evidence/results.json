@@ -1,0 +1,73 @@
+{
+  "captured_at": "2026-10-22T12:21:30.851776+08:00",
+  "graph": "medical_demo",
+  "queries": {
+    "nodes": "MATCH (n) RETURN label(n) AS label, count(n) AS total ORDER BY label",
+    "relationships": "MATCH ()-[r]->() RETURN label(r) AS label, count(r) AS total ORDER BY label",
+    "aggregate": "MATCH (d:Disease)-[:HAS_SYMPTOM]->(s:Symptom) RETURN d.name AS disease, count(DISTINCT s) AS symptom_count ORDER BY symptom_count DESC, disease",
+    "deleted_demo_count": "MATCH (x:Symptom {name:'临时症状-CRUD'}) RETURN count(x) AS remaining",
+    "symptoms_query": "MATCH (d:Disease)-[:HAS_SYMPTOM]->(s:Symptom) WHERE d.name = $disease RETURN d.name AS disease, collect(s.name) AS symptoms"
+  },
+  "nodes": [
+    {
+      "label": "Department",
+      "total": 3
+    },
+    {
+      "label": "Disease",
+      "total": 4
+    },
+    {
+      "label": "Drug",
+      "total": 3
+    },
+    {
+      "label": "Symptom",
+      "total": 7
+    }
+  ],
+  "relationships": [
+    {
+      "label": "BELONGS_TO",
+      "total": 4
+    },
+    {
+      "label": "HAS_SYMPTOM",
+      "total": 12
+    },
+    {
+      "label": "TREATS",
+      "total": 4
+    }
+  ],
+  "aggregate": [
+    {
+      "disease": "普通感冒",
+      "symptom_count": 4
+    },
+    {
+      "disease": "流行性感冒",
+      "symptom_count": 3
+    },
+    {
+      "disease": "过敏性鼻炎",
+      "symptom_count": 3
+    },
+    {
+      "disease": "急性咽炎",
+      "symptom_count": 2
+    }
+  ],
+  "deleted_demo_count": [
+    {
+      "remaining": 0
+    }
+  ],
+  "symptoms_query": [
+    {
+      "disease": "普通感冒",
+      "symptoms": "[咳嗽,流鼻涕,鼻塞,咽痛]"
+    }
+  ],
+  "verification": "passed"
+}

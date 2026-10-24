@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!vendor/
+vendor/*
+!vendor/tugraph-4.5.1-1.el7.x86_64.rpm

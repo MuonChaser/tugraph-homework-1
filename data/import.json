@@ -1,0 +1,20 @@
+{
+  "schema": [
+    {"label": "Disease", "type": "VERTEX", "primary": "name", "properties": [{"name": "name", "type": "STRING"}, {"name": "category", "type": "STRING"}]},
+    {"label": "Symptom", "type": "VERTEX", "primary": "name", "properties": [{"name": "name", "type": "STRING"}, {"name": "severity", "type": "STRING"}]},
+    {"label": "Department", "type": "VERTEX", "primary": "name", "properties": [{"name": "name", "type": "STRING"}]},
+    {"label": "Drug", "type": "VERTEX", "primary": "name", "properties": [{"name": "name", "type": "STRING"}, {"name": "kind", "type": "STRING"}]},
+    {"label": "HAS_SYMPTOM", "type": "EDGE", "properties": [], "constraints": [["Disease", "Symptom"]]},
+    {"label": "BELONGS_TO", "type": "EDGE", "properties": [], "constraints": [["Disease", "Department"]]},
+    {"label": "TREATS", "type": "EDGE", "properties": [], "constraints": [["Disease", "Drug"]]}
+  ],
+  "files": [
+    {"path": "/workspace/data/diseases.csv", "header": 1, "format": "CSV", "label": "Disease", "columns": ["name", "category"]},
+    {"path": "/workspace/data/symptoms.csv", "header": 1, "format": "CSV", "label": "Symptom", "columns": ["name", "severity"]},
+    {"path": "/workspace/data/departments.csv", "header": 1, "format": "CSV", "label": "Department", "columns": ["name"]},
+    {"path": "/workspace/data/drugs.csv", "header": 1, "format": "CSV", "label": "Drug", "columns": ["name", "kind"]},
+    {"path": "/workspace/data/disease_symptom.csv", "header": 1, "format": "CSV", "label": "HAS_SYMPTOM", "SRC_ID": "Disease", "DST_ID": "Symptom", "columns": ["SRC_ID", "DST_ID"]},
+    {"path": "/workspace/data/disease_department.csv", "header": 1, "format": "CSV", "label": "BELONGS_TO", "SRC_ID": "Disease", "DST_ID": "Department", "columns": ["SRC_ID", "DST_ID"]},
+    {"path": "/workspace/data/disease_drug.csv", "header": 1, "format": "CSV", "label": "TREATS", "SRC_ID": "Disease", "DST_ID": "Drug", "columns": ["SRC_ID", "DST_ID"]}
+  ]
+}

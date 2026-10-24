@@ -1,0 +1,25 @@
+[20261022 04:01:45.386122 0x00007c90603a9a80 INFO  toolkits/lgraph_import.cpp:307] Importing FROM SCRATCH:   
+	from:                 /workspace/data/import.json
+	to:                   /workspace/runtime/db
+	verbose:              1
+	log_dir:              
+	keep_vid_in_memory:   true
+	parse_file_threads:   10
+	parse_block_threads:  10
+	parse_block_size:     8388608
+	generate_sst_threads: 32
+	read_rocksdb_threads: 32
+	vid_num_per_reading:  10000
+	max_size_per_reading: 33554432
+[20261022 04:01:45.541154 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add vertex label:Disease
+[20261022 04:01:45.543494 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add vertex label:Symptom
+[20261022 04:01:45.545414 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add vertex label:Department
+[20261022 04:01:45.547227 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add vertex label:Drug
+[20261022 04:01:45.548477 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add edge label:HAS_SYMPTOM
+[20261022 04:01:45.549989 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add edge label:BELONGS_TO
+[20261022 04:01:45.551470 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:107] Add edge label:TREATS
+[20261022 04:01:45.606192 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:512] Convert vertex data to sst files, time: 0.0539179s
+[20261022 04:01:45.637172 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:877] Convert edge data to sst files, time: 0.0306761s
+[20261022 04:01:45.648678 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:1034] Write vertex primary index to lmdb, time: 0.00991511s
+[20261022 04:01:45.734795 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:1410] Dump rocksdb into lmdb, time: 0.0860486s
+[20261022 04:01:45.735620 0x00007c90603a9a80 INFO  src/import/import_v3.cpp:216] Import finished in 0.338341 seconds.

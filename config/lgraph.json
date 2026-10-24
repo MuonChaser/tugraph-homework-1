@@ -1,0 +1,14 @@
+{
+  "directory": "/workspace/runtime/db",
+  "host": "0.0.0.0",
+  "port": 7070,
+  "rpc_port": 9090,
+  "enable_rpc": true,
+  "bolt_port": 7687,
+  "enable_ha": false,
+  "verbose": 2,
+  "log_dir": "",
+  "disable_auth": false,
+  "ssl_auth": false,
+  "web": "/usr/local/share/lgraph/browser-resource"
+}

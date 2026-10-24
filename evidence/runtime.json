@@ -1,0 +1,29 @@
+{
+  "recorded_at": "2026-10-22T12:21:31.154932+08:00",
+  "container_name": "/tugraph-assignment",
+  "image": "tugraph-assignment-clean:4.5.1",
+  "container_id": "680620e15ba603461c6823b5ae067205686de617dcdb872c6233bc9fafadb968",
+  "state": "running",
+  "port_bindings": {
+    "7070/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "17070"
+      }
+    ],
+    "7687/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "17687"
+      }
+    ],
+    "9090/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "19090"
+      }
+    ]
+  },
+  "package_source": "https://github.com/TuGraph-family/tugraph-db/releases/download/v4.5.1/tugraph-4.5.1-1.el7.x86_64.rpm",
+  "package_sha256": "d9afcd3194c4d1a6b1e0c0309636711a6e69b4e48d8b5c23986ceef2c83d9c88"
+}
