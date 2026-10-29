@@ -1,299 +1,42 @@
 % !TeX program = xelatex
-% Course assignment 1. Compile twice with XeLaTeX.
 \documentclass[UTF8,a4paper,zihao=-4,fontset=windows]{ctexart}
-\usepackage[left=22mm,right=22mm,top=21mm,bottom=21mm,headheight=15pt,headsep=7mm]{geometry}
-\usepackage{graphicx,xcolor,booktabs,tabularx,array,float,caption,fancyhdr,fvextra,hyperref,setspace,xurl}
-\definecolor{Navy}{HTML}{000000}
-\definecolor{Rule}{HTML}{000000}
-\hypersetup{colorlinks=true,urlcolor=Navy,linkcolor=Navy,pdftitle={作业1},pdfsubject={TuGraph 图数据库实验}}
-\ctexset{section={format=\zihao{4}\heiti,name={,},number=\arabic{section},aftername=\quad},subsection={format=\zihao{-4}\heiti,number=\arabic{section}.\arabic{subsection},aftername=\quad}}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small 作业1}
-\fancyhead[R]{\small TuGraph 图数据库实验}
-\fancyfoot[C]{\small\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-\setlength{\parindent}{2em}
-\setlength{\parskip}{0pt}
-\setlength{\emergencystretch}{2em}
-\linespread{1.25}
-\captionsetup{font=small,labelfont=bf,labelsep=quad,justification=centering,singlelinecheck=false,skip=5pt}
-\DefineVerbatimEnvironment{Code}{Verbatim}{fontsize=\footnotesize,breaklines=true,breakanywhere=true,frame=none,framesep=2mm,rulecolor=\color{Rule},tabsize=2}
+\usepackage[margin=23mm]{geometry}
+\usepackage{booktabs,tabularx,hyperref,listings,xcolor}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=black}
 \input{student-info.tex}
 \begin{document}
 \input{cover.tex}
 \begin{center}
-  {\zihao{3}\heiti 作业1：TuGraph 图数据库实验报告\par}
+{\Large\bfseries 作业1：TuGraph 电影知识图谱实验报告}
 \end{center}
-\vspace{2mm}
-
-
-
-
-\section{实验目标与整体设计}
-
-本实验完成 TuGraph 平台部署、图模型建立、CSV 数据导入、增删改查及自定义聚合查询，以疾病、症状、科室和药品为实体：节点保存实体属性，边表示实体关联，Cypher 用于模式匹配与统计。
-
-
-整体流程为：UTF-8 CSV → JSON 图模型和字段映射 → lgraph\_import 原生导入 → TuGraph 存储引擎 → Browser 查询交互。节点用 name 作为主键，关系文件按主键连接节点。原始 CSV 与数据库目录分别保存，便于复现和备份。
-
-
-由于本地设备性能充足，本实验采用 Docker 在本地部署 TuGraph。运行环境为 Windows Docker Desktop 的 Linux 容器，数据库来自官方发布的 4.5.1 RPM 包。最终容器使用 Debian 13 基础环境，宿主机 HTTP 17070、Bolt 17687、RPC 19090 映射至容器对应端口，映射地址限定为 127.0.0.1。
-
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 240bp 0 0,clip,width=\linewidth]{images/01-platform.jpg}
-\caption{TuGraph Browser 登录结果（medical\_demo：17 个节点、20 条关系）}
-\end{figure}
-
-
-
-\section{安装、部署与启动}
-
-从 TuGraph 官方 GitHub Release 下载 4.5.1 RPM 安装包。在容器中安装 rpm2cpio、cpio、libgomp1、libgfortran5 后解包二进制和 Browser 资源，服务成功启动。Dockerfile 固定基础镜像 digest，入口替换为 lgraph\_server。
-
-
-在项目目录启动 Docker Desktop 后，执行 setup.ps1，构建镜像、导入 CSV 数据并启动服务。启动的核心命令为：
-
-
-\begin{Code}
-docker run -d --name tugraph-assignment --restart unless-stopped `
-  -p 127.0.0.1:17070:7070 -p 127.0.0.1:17687:7687 `
-  -p 127.0.0.1:19090:9090 `
-  --mount "type=bind,source=${PWD},target=/workspace" `
-  tugraph-assignment-clean:4.5.1
-
-docker ps --filter name=tugraph-assignment
-docker logs --tail 30 tugraph-assignment
-\end{Code}
-
-服务读取 \path{config/lgraph.json}，数据库位于 \path{/workspace/runtime/db}。浏览器访问 \path{http://127.0.0.1:17070}，填写 Bolt 地址 127.0.0.1:17687，使用账号 admin、默认密码 73@TuGraph 登录，进入 medical\_demo 图项目。
-
-
-启动日志显示 TuGraph Graph Database v4.5.1，包含以下成功信息；完整原始输出保存在 \path{evidence/startup.log}：
-
-
-\begin{Code}
-Listening for RPC on port 9090
-Listening for REST on port 7070
-bolt server run
-Server started.
-\end{Code}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 220bp 0 0,clip,width=\linewidth]{images/00-runtime-logs.jpg}
-\caption{TuGraph 服务启动与 CSV 数据导入日志}
-\end{figure}
-
-停止和再次启动分别执行 docker stop tugraph-assignment、docker start tugraph-assignment。数据通过挂载目录保存，重启容器后再次核对的数量与导入结果一致。
-
-
-
-
-\section{图模型与数据导入}
-
-\subsection{属性图模型}
-
-\begin{center}\small\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}\toprule
-
-\textbf{节点类型} & \textbf{主键} & \textbf{其他属性} & \textbf{数量} \\
-
-\midrule
-
-Disease & name: STRING & category: STRING & 4 \\
-
-Symptom & name: STRING & severity: STRING & 7 \\
-
-Department & name: STRING & 无 & 3 \\
-
-Drug & name: STRING & kind: STRING & 3 \\
-
-\bottomrule\end{tabularx}\end{center}
-
-\begin{center}\small\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}\toprule
-
-\textbf{边类型} & \textbf{起点} & \textbf{终点} & \textbf{数量} \\
-
-\midrule
-
-HAS\_SYMPTOM & Disease & Symptom & 12 \\
-
-BELONGS\_TO & Disease & Department & 4 \\
-
-TREATS & Disease & Drug & 4 \\
-
-\bottomrule\end{tabularx}\end{center}
-
-TREATS 连接疾病与对应药品。
-
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 55bp 0 0,clip,width=\linewidth]{images/02-schema.jpg}
-\caption{医疗知识图谱模型}
-\end{figure}
-
-
-
-\subsection{CSV 导入与数量核对}
-
-准备四份节点文件 diseases.csv、symptoms.csv、departments.csv、drugs.csv，以及三份关系文件 disease\_symptom.csv、disease\_department.csv、disease\_drug.csv。文件使用 UTF-8 编码，首行为表头；import.json 的 header 设为 1。
-
-
-import.json 中 schema 定义标签、属性、主键和边约束，files 定义文件路径与列映射。例如疾病症状边的映射如下：
-
-
-\begin{Code}
-{
-  "path": "/workspace/data/disease_symptom.csv",
-  "header": 1, "format": "CSV", "label": "HAS_SYMPTOM",
-  "SRC_ID": "Disease", "DST_ID": "Symptom",
-  "columns": ["SRC_ID", "DST_ID"]
-}
-\end{Code}
-
-在空数据库目录执行原生离线导入：
-
-
-\begin{Code}
-lgraph_import --config_file /workspace/data/import.json \
-  --dir /workspace/runtime/db --graph medical_demo
-\end{Code}
-
-导入日志显示四个 vertex label 和三个 edge label 均创建成功，结束信息为 Import finished in 0.338341 seconds。启动服务后，再通过 Cypher 分类型核对导入数量。
-
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 190bp 0 0,clip,width=\linewidth]{images/03-import-counts.jpg}
-\caption{数据导入后各类型节点数量}
-\end{figure}
-
-
-
+\section{实验目标}
+使用 TuGraph 4.5.1 建立电影知识图谱，掌握 CSV 属性图建模、数据导入、Cypher 增删改查和聚合分析。采用 Movie、Person 两类节点，通过 PRODUCED 连接制作人员与电影。
+\section{实验数据}
+数据来自三份电影业务 CSV：movie.csv、person.csv、produce.csv。原始文件分别含有 54 部电影、665 名人物和 60 条制作关系（文件记录数量，不是数据库实测数量）。电影主键为 id，属性包括 title、tagline、summary、poster\_image、duration 和 rated；人物主键为 id，属性包括 name、born、poster\_image。PRODUCED 由 Person 指向 Movie，端点以主键匹配。
+\section{实验环境与流程}
+在 Windows PowerShell 和 Docker Desktop 的 Linux x86\_64 容器中使用 TuGraph 4.5.1。先运行 \texttt{scripts/prepare\_movie\_csv.py}，将源 CSV 转为统一编码、标准表头的文件。导入配置位于 \texttt{data/movie\_csv/import.json}。执行 \texttt{setup.ps1} 完成镜像构建与离线导入，图名为 \texttt{movie\_csv\_demo}，数据库保存在 \texttt{runtime/db}。
+\section{查询设计}
+\subsection{基本数量与关联查询}
+通过 \texttt{MATCH (m:Movie) RETURN count(m)} 统计电影节点数量；通过 \texttt{MATCH (p:Person)-[:PRODUCED]->(m:Movie)} 查询人物与电影制作关系。
+\subsection{制作人员作品数量}
+\begin{lstlisting}[basicstyle=\ttfamily\small,breaklines=true]
+MATCH (p:Person)-[:PRODUCED]->(m:Movie)
+RETURN p.name AS producer, count(DISTINCT m) AS movie_count
+ORDER BY movie_count DESC, producer LIMIT 20;
+\end{lstlisting}
+\subsection{电影制作人员数量}
+\begin{lstlisting}[basicstyle=\ttfamily\small,breaklines=true]
+MATCH (p:Person)-[:PRODUCED]->(m:Movie)
+RETURN m.title AS movie, count(DISTINCT p) AS producer_count
+ORDER BY producer_count DESC, movie LIMIT 20;
+\end{lstlisting}
+\subsection{影片时长与分级}
+利用 \texttt{avg(m.duration)} 和 \texttt{count(m)} 分析不同 \texttt{rated} 分组的片长与电影数量；分析仅针对数据中具有时长的电影。
 \section{增删改查}
-
-在 medical\_demo 图的“语句查询”页面逐条执行 Cypher，使用主键为“临时症状-CRUD”的节点演示，再将其删除。
-
-
-\subsection{新增与查询}
-
-\begin{Code}
-CREATE (x:Symptom {name:'临时症状-CRUD', severity:'测试'})
-RETURN x.name AS name, x.severity AS severity;
-
-MATCH (x:Symptom {name:'临时症状-CRUD'})
-RETURN x.name AS name, x.severity AS severity;
-\end{Code}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 410bp 0 0,clip,width=\linewidth]{images/04-create.jpg}
-\caption{创建症状节点}
-\end{figure}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 410bp 0 0,clip,width=\linewidth]{images/05-read.jpg}
-\caption{查询新增节点}
-\end{figure}
-
-
-
-\subsection{修改与删除}
-
-\begin{Code}
-MATCH (x:Symptom {name:'临时症状-CRUD'})
-SET x.severity = '已修改'
-RETURN x.name AS name, x.severity AS severity;
-
-MATCH (x:Symptom {name:'临时症状-CRUD'}) DELETE x;
-\end{Code}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 410bp 0 0,clip,width=\linewidth]{images/06-update.jpg}
-\caption{修改节点的 severity 属性}
-\end{figure}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 410bp 0 0,clip,width=\linewidth]{images/06b-delete.jpg}
-\caption{删除节点的执行结果}
-\end{figure}
-
-
-
-\subsection{删除后复查}
-
-\begin{Code}
-MATCH (x:Symptom {name:'临时症状-CRUD'})
-RETURN count(x) AS remaining;
-\end{Code}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 410bp 0 0,clip,width=\linewidth]{images/06c-delete-check.jpg}
-\caption{删除后复查结果：remaining 为 0}
-\end{figure}
-
-\section{自定义聚合查询}
-
-本实验统计每种疾病关联的不同症状数量。MATCH 匹配疾病到症状的路径，按疾病分组，用 count(DISTINCT s) 去重计数，再按数量降序排序。
-
-
-\begin{Code}
-MATCH (d:Disease)-[:HAS_SYMPTOM]->(s:Symptom)
-RETURN d.name AS disease, count(DISTINCT s) AS symptom_count
-ORDER BY symptom_count DESC;
-\end{Code}
-
-
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 185bp 0 0,clip,width=\linewidth]{images/07-aggregate.jpg}
-\caption{疾病症状数量聚合查询结果}
-\end{figure}
-
-\subsection{用户交互与关系图}
-
-在 Browser 中选中 medical\_demo，输入 Cypher 后点击“执行”，可切换“表格文本”和“点边视图”。以下查询显示疾病与症状的关系网络：
-
-
-\begin{Code}
-MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
-RETURN d,r,s;
-\end{Code}
-
-\begin{figure}[H]\centering
-\includegraphics[trim=0 0bp 0 0,clip,width=\linewidth]{images/08-graph.jpg}
-\caption{疾病与症状的关系图}
-\end{figure}
-
-
-
-\section{实验结果与总结}
-
-本实验完成了 TuGraph 4.5.1 的安装与启动，建立医疗知识图谱模型，导入 7 个 CSV 文件，并执行了节点增删改查、关系查询和聚合统计。实验结果如下。
-
-\begin{center}\small\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}\toprule
-
-\textbf{核对项} & \textbf{实测结果} \\
-
-\midrule
-
-TuGraph 版本 / 图项目 & 4.5.1 / medical\_demo \\
-
-节点数 / 节点类型 & 17 / 4 \\
-
-关系数 / 关系类型 & 20 / 3 \\
-
-CRUD 临时节点剩余数 & 0 \\
-
-聚合查询 & 普通感冒4、过敏性鼻炎3、流行性感冒3、急性咽炎2 \\
-
-服务重启后核对 & 与上述数量一致 \\
-
-\bottomrule\end{tabularx}\end{center}
-
-实验结果表明，TuGraph 能够保存疾病、症状、科室和药品之间的关联，并通过 Cypher 完成路径匹配、数据维护及分组统计。新增节点经修改和删除后，图中节点数恢复为 17，关系数保持为 20。重启服务后，查询结果与导入数据一致。
-
-项目代码：\url{https://github.com/MuonChaser/tugraph-homework-1}。
-
+建立主键为 -999999 的临时 Movie 节点，再读取、更新其 title、删除并检查剩余数量。该临时记录不属于原始电影数据，在操作结束后应为 0。
+\section{复现与结果核对}
+在 Browser 运行 \texttt{cypher/movie\_csv.cypher} 中的语句，并执行 \texttt{python scripts/verify\_movie\_csv.py}。脚本自动比较导入 CSV 的行数和实时数据库查询结果，保存 JSON 供实验核查。
+\textbf{当前版本未附数据库运行截图或实测输出。} 正式提交前应在实际部署环境运行验证，并在此处补充结果及截图；不得将 CSV 行数当作数据库实际验证结果。
+\section{实验总结}
+本实验以电影及制作人员的属性图表示实体与制作关系，并将 CSV 数据准备、TuGraph 导入、关系查询、聚合和 CRUD 组织为可复现流程。数量一致性及运行截图需以实际部署为依据。
 \end{document}
