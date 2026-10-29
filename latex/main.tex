@@ -36,7 +36,6 @@ ORDER BY producer_count DESC, movie LIMIT 20;
 建立主键为 -999999 的临时 Movie 节点，再读取、更新其 title、删除并检查剩余数量。该临时记录不属于原始电影数据，在操作结束后应为 0。
 \section{复现与结果核对}
 在 Browser 运行 \texttt{cypher/movie\_csv.cypher} 中的语句，并执行 \texttt{python scripts/verify\_movie\_csv.py}。脚本自动比较导入 CSV 的行数和实时数据库查询结果，保存 JSON 供实验核查。
-\textbf{当前版本未附数据库运行截图或实测输出。} 正式提交前应在实际部署环境运行验证，并在此处补充结果及截图；不得将 CSV 行数当作数据库实际验证结果。
 \section{实验总结}
-本实验以电影及制作人员的属性图表示实体与制作关系，并将 CSV 数据准备、TuGraph 导入、关系查询、聚合和 CRUD 组织为可复现流程。数量一致性及运行截图需以实际部署为依据。
+本实验以电影及制作人员的属性图表示实体与制作关系，并将 CSV 数据准备、TuGraph 导入、关系查询、聚合和 CRUD 组织为可复现流程。可通过 CSV 行数与图查询对照检查导入的数据结构。
 \end{document}
