@@ -1,0 +1,119 @@
+{
+  "schema": [
+    {
+      "label": "Movie",
+      "type": "VERTEX",
+      "primary": "id",
+      "properties": [
+        {
+          "name": "id",
+          "type": "INT32"
+        },
+        {
+          "name": "title",
+          "type": "STRING"
+        },
+        {
+          "name": "tagline",
+          "type": "STRING"
+        },
+        {
+          "name": "summary",
+          "type": "STRING",
+          "optional": true
+        },
+        {
+          "name": "poster_image",
+          "type": "STRING",
+          "optional": true
+        },
+        {
+          "name": "duration",
+          "type": "INT32"
+        },
+        {
+          "name": "rated",
+          "type": "STRING",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "label": "Person",
+      "type": "VERTEX",
+      "primary": "id",
+      "properties": [
+        {
+          "name": "id",
+          "type": "INT32"
+        },
+        {
+          "name": "name",
+          "type": "STRING"
+        },
+        {
+          "name": "born",
+          "type": "INT32",
+          "optional": true
+        },
+        {
+          "name": "poster_image",
+          "type": "STRING",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "label": "PRODUCED",
+      "type": "EDGE",
+      "properties": [],
+      "constraints": [
+        [
+          "Person",
+          "Movie"
+        ]
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "/workspace/data/movie_csv/movies.csv",
+      "header": 1,
+      "format": "CSV",
+      "label": "Movie",
+      "columns": [
+        "id",
+        "title",
+        "tagline",
+        "summary",
+        "poster_image",
+        "duration",
+        "rated"
+      ]
+    },
+    {
+      "path": "/workspace/data/movie_csv/people.csv",
+      "header": 1,
+      "format": "CSV",
+      "label": "Person",
+      "columns": [
+        "id",
+        "name",
+        "born",
+        "poster_image"
+      ]
+    },
+    {
+      "path": "/workspace/data/movie_csv/produced.csv",
+      "header": 1,
+      "format": "CSV",
+      "label": "PRODUCED",
+      "SRC_ID": "Person",
+      "DST_ID": "Movie",
+      "columns": [
+        "SRC_ID",
+        "DST_ID"
+      ]
+    }
+  ]
+}
