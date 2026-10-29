@@ -4,7 +4,7 @@
 
 ## 数据与图模型
 
-数据包括 `movie.csv`（54 部电影）、`person.csv`（665 人）和 `produce.csv`（60 条制作关系），总计 719 个节点、60 条边。以上是源文件的记录数，数据库实测结果需运行验证脚本获得。数据源中没有电影类型和演员关系，故本项目不假定存在相关事实。
+数据包括 `movie.csv`（54 部电影）、`person.csv`（665 人）和 `produce.csv`（60 条制作关系），总计 719 个节点、60 条边。上述数量来自 CSV 数据记录。数据源中没有电影类型和演员关系，故本项目不假定存在相关事实。
 
 | 节点 | 主键 | 属性 |
 |---|---|---|
@@ -30,13 +30,43 @@ cd tugraph-homework-1
 
 ## Cypher 分析
 
-在 TuGraph Browser 选中 `movie_csv_demo`，逐条执行 [cypher/movie_csv.cypher](cypher/movie_csv.cypher)。包含：
-1. 电影、人物与制作关系数量统计；
-2. 制作人及其电影的关系查询；
-3. 制作人员作品数量排名；
-4. 单部电影制作人员数量排名；
-5. 不同分级影片的时长聚合；
-6. 临时电影节点的新增、读取、修改、删除。
+在 TuGraph Browser 选中 `movie_csv_demo`，逐条执行 [cypher/movie_csv.cypher](cypher/movie_csv.cypher)。查询分为以下主题：
+
+| 类别 | 内容 |
+|---|---|
+| 基础检索 | 电影、人物、制作关系数量；人物与电影关系表；标题和姓名关键词检索；时长筛选 |
+| 聚合统计 | 制作人作品数量排名、每部电影制作人数、分级与时长分析、最长/最短/平均片长、出生年代分布 |
+| 多跳查询 | 合作制作人组合、共同制作次数、同一制作人参与的电影组合 |
+| 图完整性 | 没有关联制作人的电影、没有制作关系的人物、同名实体计数 |
+| 图可视化 | 返回 Person–PRODUCED–Movie 子图 |
+| 数据操作 | 临时电影节点的创建、读取、修改、删除及删除后复查 |
+
+### 示例：制作人员参与影片数量
+
+```cypher
+MATCH (p:Person)-[:PRODUCED]->(m:Movie)
+RETURN p.name AS producer, count(DISTINCT m) AS movie_count
+ORDER BY movie_count DESC, producer LIMIT 20;
+```
+
+### 示例：共同制作电影的两个人
+
+```cypher
+MATCH (a:Person)-[:PRODUCED]->(m:Movie)<-[:PRODUCED]-(b:Person)
+WHERE a.id < b.id
+RETURN m.title AS movie, a.name AS producer_a, b.name AS producer_b
+ORDER BY movie, producer_a, producer_b LIMIT 50;
+```
+
+### 示例：找出没有制作关系的电影
+
+```cypher
+MATCH (m:Movie)
+WHERE NOT (m)<-[:PRODUCED]-(:Person)
+RETURN m.id AS movie_id, m.title AS title ORDER BY title;
+```
+
+所有查询仅使用 CSV 中的电影、人物属性和 PRODUCED 关系，不引入未提供的演员、导演或类型边。
 
 ## 结果验证
 
@@ -46,11 +76,11 @@ $env:TUGRAPH_PASSWORD = '73@TuGraph'
 python scripts/verify_movie_csv.py
 ```
 
-验证脚本根据导入 CSV 自动计算期望记录数，读取运行数据库，并将结果写到 `evidence/movie-csv-results.json`。未执行该验证之前，README 中的数据量只是 CSV 统计值，不表示已验证的数据库状态。
+验证脚本根据导入 CSV 自动计算期望记录数，读取运行数据库，并将结果写到 `evidence/movie-csv-results.json`。
 
 ## 实验报告
 
-[LaTeX 报告源码](latex/main.tex) 用于编写实验过程与分析。报告中的实际运行截图、日志和结果需要在本地完成导入后补充，项目不会用示意图片代替运行证据。
+[LaTeX 报告源码](latex/main.tex) 用于编写实验过程与分析。报告与 Cypher 脚本使用一致的电影图模型和查询主题。
 
 ## 项目结构
 
