@@ -56,9 +56,25 @@ cd tugraph-homework-1
 
 脚本依次执行数据预处理、TuGraph 4.5.1 环境构建、CSV 数据导入和服务启动。Browser 地址为 `http://127.0.0.1:17070`，Bolt 地址为 `bolt://127.0.0.1:17687`。
 
+### TuGraph Browser 界面
+
+![TuGraph Browser 登录页面](https://raw.githubusercontent.com/Ruinan-Li/SSH/89ccf6fa4e501216d13192572261d2b5ed29b785/screenshots/01-login.png)
+
+*图 1　TuGraph Browser 登录页面。*
+
+![TuGraph 图项目管理页面](https://raw.githubusercontent.com/Ruinan-Li/SSH/89ccf6fa4e501216d13192572261d2b5ed29b785/screenshots/02-console.png)
+
+*图 2　TuGraph 图项目管理页面。*
+
+
 ## 四、Cypher 查询与数据操作
 
 完整查询语句见 [cypher/movie_csv.cypher](cypher/movie_csv.cypher)。本实验从基本查询、聚合分析、多跳关系和增删改查四个层次组织数据库操作。
+
+![TuGraph Cypher 语句查询界面](https://raw.githubusercontent.com/Ruinan-Li/SSH/89ccf6fa4e501216d13192572261d2b5ed29b785/screenshots/04-import.png)
+
+*图 3　Cypher 查询编辑器及列表结果展示界面示例。界面中的语句及记录仅用于展示查询交互方式。*
+
 
 ### 4.1 节点和关系数量统计
 
