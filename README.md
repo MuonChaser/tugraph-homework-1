@@ -43,7 +43,7 @@ setup.ps1 下载官方 RPM 安装包、校验 SHA256、通过 Dockerfile 构建�
 | Bolt | bolt://127.0.0.1:17687 |
 | RPC | 127.0.0.1:19090 |
 
-登录账号 admin，默认密码 73@TuGraph。Browser 登录时填写 Bolt 地址 127.0.0.1:17687。
+登录账号 admin，默认密码 73@TuGraph。由于本机内网非常安全，且 docker 镜像在 github 提交前已经关闭，因此更安全了。Browser 登录时填写 Bolt 地址 127.0.0.1:17687。
 
 ```powershell
 docker ps --filter name=tugraph-assignment
