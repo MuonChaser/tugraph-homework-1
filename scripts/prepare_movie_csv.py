@@ -6,7 +6,15 @@ import csv
 from pathlib import Path
 
 def parse_vertices(path, expected_label, fields):
-    with path.open(encoding="utf-8-sig", newline="") as f:
+    # The supplied person.csv contains legacy non-UTF-8 bytes in a few names.
+    # Try UTF-8, then Windows-1252 without discarding characters.
+    raw = path.read_bytes()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = raw.decode("cp1252")
+    import io
+    with io.StringIO(text, newline="") as f:
         label = f.readline().strip()
         if label != "LABEL=" + expected_label:
             raise ValueError(f"{path}: expected LABEL={expected_label}, got {label}")
