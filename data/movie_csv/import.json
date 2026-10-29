@@ -19,13 +19,11 @@
         },
         {
           "name": "summary",
-          "type": "STRING",
-          "optional": true
+          "type": "STRING"
         },
         {
           "name": "poster_image",
-          "type": "STRING",
-          "optional": true
+          "type": "STRING"
         },
         {
           "name": "duration",
@@ -33,8 +31,7 @@
         },
         {
           "name": "rated",
-          "type": "STRING",
-          "optional": true
+          "type": "STRING"
         }
       ]
     },
@@ -53,13 +50,11 @@
         },
         {
           "name": "born",
-          "type": "INT32",
-          "optional": true
+          "type": "INT32"
         },
         {
           "name": "poster_image",
-          "type": "STRING",
-          "optional": true
+          "type": "STRING"
         }
       ]
     },
